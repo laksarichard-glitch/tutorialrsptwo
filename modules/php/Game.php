@@ -22,12 +22,14 @@ namespace Bga\Games\tutorialrsptwo;
 
 use Bga\Games\tutorialrsptwo\States\PlayerTurn;
 use Bga\GameFramework\Components\Counters\PlayerCounter;
+use Bga\GameFramework\Components\Deck;
 
 class Game extends \Bga\GameFramework\Table
 {
-    public static array $CARD_TYPES;
+    public array $card_types;
 
     public PlayerCounter $playerEnergy;
+    public Deck $cards;
 
     /**
      * Your global variables labels:
@@ -41,19 +43,46 @@ class Game extends \Bga\GameFramework\Table
     public function __construct()
     {
         parent::__construct();
-        $this->initGameStateLabels([]); // mandatory, even if the array is empty
+        $this->initGameStateLabels(
+            [
+                "trick_color" => 11,
+            ]
+        );
 
+        $this->cards = $this->deckFactory->createDeck('card'); // card is the our database name
         $this->playerEnergy = $this->bga->counterFactory->createPlayerCounter('energy');
-
-        self::$CARD_TYPES = [
-            1 => [
-                "card_name" => clienttranslate('Troll'), // ...
+        $this->card_types = [
+            "suites" => [
+                1 => [
+                    'name' => clienttranslate('Spade'),
+                ],
+                2 => [
+                    'name' => clienttranslate('Heart'),
+                ],
+                3 => [
+                    'name' => clienttranslate('Club'),
+                ],
+                4 => [
+                    'name' => clienttranslate('Diamond'),
+                ]
             ],
-            2 => [
-                "card_name" => clienttranslate('Goblin'), // ...
-            ],
-            // ...
+            "types" => [
+                2 => ['name' => '2'],
+                3 => ['name' => '3'],
+                4 => ['name' => '4'],
+                5 => ['name' => '5'],
+                6 => ['name' => '6'],
+                7 => ['name' => '7'],
+                8 => ['name' => '8'],
+                9 => ['name' => '9'],
+                10 => ['name' => '10'],
+                11 => ['name' => clienttranslate('J')],
+                12 => ['name' => clienttranslate('Q')],
+                13 => ['name' => clienttranslate('K')],
+                14 => ['name' => clienttranslate('A')]
+            ]
         ];
+
 
         /* example of notification decorator.
         // automatically complete notification args when needed
@@ -179,6 +208,8 @@ class Game extends \Bga\GameFramework\Table
         $this->reloadPlayersBasicInfos();
 
         // Init global values with their initial values.
+        // Set current trick color to zero (= no trick color)
+        $this->setGameStateInitialValue('trick_color', 0);
 
         // Init game statistics.
         //
@@ -189,6 +220,24 @@ class Game extends \Bga\GameFramework\Table
         // $this->playerStats->init('player_teststat1', 0);
 
         // TODO: Setup the initial game situation here.
+        // Create cards
+        $cards = [];
+        foreach ($this->card_types["suites"] as $suit => $suit_info) {
+            // spade, heart, diamond, club
+            foreach ($this->card_types["types"] as $value => $info_value) {
+                //  2, 3, 4, ... K, A
+                $cards[] = ['type' => $suit, 'type_arg' => $value, 'nbr' => 1];
+            }
+        }
+        $this->cards->createCards($cards, 'deck');
+
+        // Shuffle deck
+        $this->cards->shuffle('deck');
+        // Deal 13 cards to each players
+        $players = $this->loadPlayersBasicInfos();
+        foreach ($players as $player_id => $player) {
+            $this->cards->pickCards(13, 'deck', $player_id);
+        }
 
         // Activate first player once everything has been initialized and ready.
         $this->activeNextPlayer();
