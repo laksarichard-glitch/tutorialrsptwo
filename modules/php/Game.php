@@ -167,6 +167,11 @@ class Game extends \Bga\GameFramework\Table
         $this->playerEnergy->fillResult($result);
 
         // TODO: Gather all information about current game situation (visible by player $currentPlayerId).
+        // Cards in player hand
+        $result['hand'] = $this->cards->getCardsInLocation('hand', $currentPlayerId);
+
+        // Cards played on the table
+        $result['cardsontable'] = $this->cards->getCardsInLocation('cardsontable');
 
         return $result;
     }
