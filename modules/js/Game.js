@@ -89,15 +89,23 @@ export class Game {
     // Setting up player boards
     const numPlayers = Object.keys(gamedatas.players).length;
 
+    debugger;
+
     Object.values(gamedatas.players).forEach((player, index) => {
+      console.log("player ", player);
+      console.log("index ", index);
+
+      // we generate this html snippet for each player
+      // need to tweak so that divs are displayed so as to make sense i.e. first player at top of screen,
+      // then next to right, next at bottom and last on the left
+      // look at playerorder in gamesdatas
       document.getElementById("player-tables").insertAdjacentHTML(
         "beforeend",
-        // we generate this html snippet for each player
         `
-    <div class="playertable whiteblock playertable_${index}">
-        <div class="playertablename" style="color:#${player.color};">${player.name}</div>
-        <div id="tableau_${player.id}"></div>
-    </div>
+          <div class="playertable whiteblock playertable_${index}">
+            <div class="playertablename" style="color:#${player.color};">${player.name}</div>
+            <div id="tableau_${player.id}"></div>
+          </div>
     `,
       );
     });
