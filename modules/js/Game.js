@@ -129,7 +129,7 @@ export class Game {
           case "PlayerTurn":
             // Can play a card
             // this.bgaPerformAction("actPlayCard", { card_id: card.id });
-            this.bga.actions.performAction("actPlayCard");
+            this.bga.actions.performAction("actPlayCard", { card_id: card.id });
             // this. bgaPerformAction("actPlayCard", {
             //   cardId: card.id, // this corresponds to the argument name in php, so it needs to be exactly the same
             // });
