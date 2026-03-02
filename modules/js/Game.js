@@ -181,15 +181,15 @@ export class Game {
         document.getElementById(`tableau_${player.id}`),
       );
 
-      // add void stock
-      new BgaCards.VoidStock(
-        this.cardsManager,
-        document.getElementById(`cardswon_${player.id}`),
-        {
-          autoPlace: (card) =>
-            card.location === "cardswon" && card.location_arg == player.id,
-        },
-      );
+      // // add void stock - need a div!
+      // new BgaCards.VoidStock(
+      //   this.cardsManager,
+      //   document.getElementById(`cardswon_${player.id}`),
+      //   {
+      //     autoPlace: (card) =>
+      //       card.location === "cardswon" && card.location_arg == player.id,
+      //   },
+      // );
 
       // Cards played on table
       for (i in this.gamedatas.cardsontable) {
