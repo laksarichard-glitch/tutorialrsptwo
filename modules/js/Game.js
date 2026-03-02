@@ -88,7 +88,7 @@ export class Game {
 
     // Setting up player boards
     const numPlayers = Object.keys(gamedatas.players).length;
-    debugger;
+
     Object.values(gamedatas.players).forEach((player, index) => {
       document.getElementById("player-tables").insertAdjacentHTML(
         "beforeend",
@@ -128,11 +128,7 @@ export class Game {
         switch (this.gamedatas.gamestate.name) {
           case "PlayerTurn":
             // Can play a card
-            // this.bgaPerformAction("actPlayCard", { card_id: card.id });
-            this.bga.actions.performAction("actPlayCard", { card_id: card.id });
-            // this. bgaPerformAction("actPlayCard", {
-            //   cardId: card.id, // this corresponds to the argument name in php, so it needs to be exactly the same
-            // });
+            this.bga.actions.performAction("actPlayCard", { cardId: card.id });
 
             break;
           case "GiveCards":
@@ -159,7 +155,6 @@ export class Game {
         }
       }),
     );
-    debugger;
 
     Object.values(gamedatas.players).forEach((player) => {
       // example of setting up players boards
@@ -178,7 +173,6 @@ export class Game {
     });
 
     this.tableauStocks = [];
-    debugger;
 
     Object.values(gamedatas.players).forEach((player, index) => {
       // add player tableau stock
@@ -187,12 +181,25 @@ export class Game {
         document.getElementById(`tableau_${player.id}`),
       );
 
-      // TODO: fix tableauStocks
+      // add void stock
+      new BgaCards.VoidStock(
+        this.cardsManager,
+        document.getElementById(`cardswon_${player.id}`),
+        {
+          autoPlace: (card) =>
+            card.location === "cardswon" && card.location_arg == player.id,
+        },
+      );
+
       // Cards played on table
       for (i in this.gamedatas.cardsontable) {
         var card = this.gamedatas.cardsontable[i];
         var player_id = card.location_arg;
-        this.tableauStocks[player_id].addCards([card]);
+        console.log("player id ", player.id);
+        console.log("tableauStocks  ", this.tableauStocks);
+        console.log("tableauStocks  ", this.tableauStocks[player.id]);
+
+        this.tableauStocks[player.id].addCards([card]);
       }
     });
 
@@ -235,15 +242,29 @@ export class Game {
   }
 
   // TODO: from this point and below, you can write your game notifications handling methods
+  async notif_newHand(args) {
+    // We received a new full hand of 13 cards.
+    this.handStock.removeAll();
+    this.handStock.addCards(Array.from(Object.values(args.hand)));
+  }
 
-  /*
-    Example:
-    async notif_cardPlayed( args ) {
-        // Note: args contains the arguments specified during you "notifyAllPlayers" / "notifyPlayer" PHP call
-        
-        // TODO: play the card in the user interface.
-    }
-    */
+  async notif_playCard(args) {
+    // Play a card on the table
+    this.tableauStocks[args.player_id].addCards([args.card]);
+  }
+
+  async notif_trickWin(args) {
+    // We do nothing here (just wait in order players can view the 4 cards played before they're gone)
+  }
+
+  async notif_giveAllCardsToPlayer(args) {
+    // Move all cards on table to given table, then destroy them
+    const winner_id = args.player_id;
+    const cards = Array.from(Object.values(args.cards));
+
+    await this.tableauStocks[winner_id].addCards(Array.from(cards));
+    await this.tableauStocks[winner_id].placeCards(cards);
+  }
 }
 
 /**
@@ -268,7 +289,6 @@ class PlayerTurn {
     );
 
     if (isCurrentPlayerActive) {
-      debugger;
       const playableCardsIds = args.playableCardsIds; // returned by the PlayerTurn::getArgs
 
       // Add test action buttons in the action status bar, simulating a card click:
@@ -303,9 +323,7 @@ class PlayerTurn {
     console.log("onCardClick", card_id);
 
     this.bga.actions
-      .performAction("actPlayCard", {
-        card_id,
-      })
+      .performAction("actPlayCard", { cardId: card_id })
       .then(() => {
         // What to do after the server call if it succeeded
         // (most of the time, nothing, as the game will react to notifs / change of state instead, so you can delete the `then`)

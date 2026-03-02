@@ -73,3 +73,11 @@
   background-size: 1500% auto;
   background-image: url("img/cards.jpg");
 }
+.playertable .ha-card ~ .ha-card {
+  margin-left: calc(var(--h-card-width) * -0.8);
+}
+
+.cardswon > .ha-card {
+  position: absolute;
+  top: 0 !important;
+}

@@ -28,9 +28,21 @@ class NextPlayer extends GameState
             // Select the winner
             $best_value_player_id = $game->activeNextPlayer(); // TODO figure out winner of trick
 
-            // Move all cards to "cardswon" of the given player
+            // Move all win cards to cardswon location
+            $moved_cards = $game->cards->getCardsInLocation('cardsontable'); // remember for notification what we moved
             $game->cards->moveAllCardsInLocation('cardsontable', 'cardswon', null, $best_value_player_id);
 
+            // Note: we use 2 notifications here in order we can pause the display during the first notification
+            //  before we move all cards to the winner (during the second)
+            $players = $game->loadPlayersBasicInfos();
+            $game->notify->all('trickWin', clienttranslate('${player_name} wins the trick'), array(
+                'player_id' => $best_value_player_id,
+            ));
+
+            $game->notify->all('giveAllCardsToPlayer', '', array(
+                'player_id' => $best_value_player_id,
+                'cards' => $game->cards->getCards(array_keys($moved_cards))
+            ));
             if ($game->cards->countCardInLocation('hand') == 0) {
                 // End of the hand
                 return EndHand::class;

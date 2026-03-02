@@ -23,14 +23,41 @@ class PlayerTurn extends GameState
         );
     }
 
-    #[PossibleAction] // a PHP attribute that tells BGA "this method describes a possible action that the player could take", so that you can call that action from the front (the client)
+    #[PossibleAction]
     public function actPlayCard(int $cardId, int $activePlayerId)
     {
-        throw new \BgaUserException('Not implemented: ${player_id} played card ${card_id}', args: [
-            'player_id' => $activePlayerId,
-            'card_id' => $cardId,
-        ]);
-        return NextPlayer::class; // after the action, we move to the next player
+        $game = $this->game;
+        $game->cards->moveCard($cardId, 'cardsontable', $activePlayerId);
+        // TODO: check rules here
+        $currentCard = $game->cards->getCard($cardId);
+        // And notify
+        $game->notify->all(
+            'playCard',
+            clienttranslate('${player_name} plays ${value_displayed} ${color_displayed}'),
+            [
+                'i18n' => array('color_displayed', 'value_displayed'),
+                'card' => $currentCard,
+                'player_id' => $activePlayerId,
+                'player_name' => $game->getPlayerNameById($activePlayerId),
+                'value_displayed' => $game->card_types['types'][$currentCard['type_arg']]['name'],
+                'color_displayed' => $game->card_types['suites'][$currentCard['type']]['name']
+            ]
+        );
+        return NextPlayer::class;
+    }
+
+    /**
+     * Game state arguments, example content.
+     *
+     * This method returns some additional information that is very specific to the `PlayerTurn` game state.
+     */
+    public function getArgs(): array
+    {
+        // Get some values from the current game situation from the database.
+
+        return [
+            "playableCardsIds" => [1, 2],
+        ];
     }
 
     public function zombie(int $playerId)
