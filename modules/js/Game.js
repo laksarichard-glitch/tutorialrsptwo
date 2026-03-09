@@ -27,9 +27,6 @@ export class Game {
     this.playerTurn = new PlayerTurn(this, bga);
     this.bga.states.register("PlayerTurn", this.playerTurn);
 
-    // Uncomment the next line to show debug informations about state changes in the console. Remove before going to production!
-    // this.bga.states.logger = console.log;
-
     // Here, you can init the global variables of your user interface
     // Example:
     // this.myGlobalValue = 0;
@@ -74,7 +71,10 @@ export class Game {
         div.dataset.typeArg = card.type_arg; // value 2..14
         div.style.backgroundPositionX = `calc(100% / 14 * (${card.type_arg} - 2))`; // 14 is number of columns in stock image minus 1
         div.style.backgroundPositionY = `calc(100% / 3 * (${card.type} - 1))`; // 3 is number of rows in stock image minus 1
-        this.bga.gameui.addTooltipHtml(div.id, `tooltip of ${card.type}`);
+        this.bga.gameui.addTooltipHtml(
+          div.id,
+          `tooltip of type : ${card.type} ~ id : ${card.id}`,
+        );
       },
     });
 
@@ -89,11 +89,8 @@ export class Game {
     // Setting up player boards
     const numPlayers = Object.keys(gamedatas.players).length;
 
-    debugger;
-
-    Object.values(gamedatas.players).forEach((player, index) => {
-      console.log("player ", player);
-      console.log("index ", index);
+    gamedatas.playerorder.forEach((playerId, index) => {
+      let player = this.getPlayer(gamedatas, playerId);
 
       // we generate this html snippet for each player
       // need to tweak so that divs are displayed so as to make sense i.e. first player at top of screen,
@@ -103,8 +100,9 @@ export class Game {
         "beforeend",
         `
           <div class="playertable whiteblock playertable_${index}">
-            <div class="playertablename" style="color:#${player.color};">${player.name}</div>
-            <div id="tableau_${player.id}"></div>
+            <div class="playertablename" style="color:#${player.color};">${player.name}~${player.id}</div>
+            <div id="tableau_${player.id}"/></div>
+            <div id="cardswon_${player.id}"/></div>
           </div>
     `,
       );
@@ -151,6 +149,8 @@ export class Game {
     };
 
     // TODO: fix handStock
+    console.log("fix hand stock");
+
     this.handStock.addCards(
       Object.values(this.gamedatas.hand).sort(function (a, b) {
         // sort by suit then rank
@@ -163,14 +163,14 @@ export class Game {
         }
       }),
     );
-
-    Object.values(gamedatas.players).forEach((player) => {
+    gamedatas.playerorder.forEach((playerId) => {
+      let player = this.getPlayer(gamedatas, playerId);
       // example of setting up players boards
       this.bga.playerPanels.getElement(player.id).insertAdjacentHTML(
         "beforeend",
         `
-                <span id="energy-player-counter-${player.id}"></span> Energy
-            `,
+            <span id="energy-player-counter-${player.id}"></span> Energy
+        `,
       );
       const counter = new ebg.counter();
       counter.create(`energy-player-counter-${player.id}`, {
@@ -182,22 +182,24 @@ export class Game {
 
     this.tableauStocks = [];
 
-    Object.values(gamedatas.players).forEach((player, index) => {
+    gamedatas.playerorder.forEach((playerId) => {
+      let player = this.getPlayer(gamedatas, playerId);
       // add player tableau stock
       this.tableauStocks[player.id] = new BgaCards.LineStock(
         this.cardsManager,
         document.getElementById(`tableau_${player.id}`),
       );
 
-      // // add void stock - need a div!
-      // new BgaCards.VoidStock(
-      //   this.cardsManager,
-      //   document.getElementById(`cardswon_${player.id}`),
-      //   {
-      //     autoPlace: (card) =>
-      //       card.location === "cardswon" && card.location_arg == player.id,
-      //   },
-      // );
+      // add void stock - need a div!
+      console.log("add void stock");
+      new BgaCards.VoidStock(
+        this.cardsManager,
+        document.getElementById(`cardswon_${player.id}`),
+        {
+          autoPlace: (card) =>
+            card.location === "cardswon" && card.location_arg == player.id,
+        },
+      );
 
       // Cards played on table
       for (i in this.gamedatas.cardsontable) {
@@ -209,12 +211,20 @@ export class Game {
 
         this.tableauStocks[player.id].addCards([card]);
       }
+
+      debugger;
     });
 
     // Setup game notifications to handle (see "setupNotifications" method below)
     this.setupNotifications();
 
     console.log("Ending game setup");
+  }
+
+  getPlayer(gamedatas, playerId) {
+    return Object.values(gamedatas.players).filter(
+      (player) => player.id == playerId,
+    )[0];
   }
 
   ///////////////////////////////////////////////////
@@ -266,12 +276,13 @@ export class Game {
   }
 
   async notif_giveAllCardsToPlayer(args) {
+    debugger;
     // Move all cards on table to given table, then destroy them
     const winner_id = args.player_id;
     const cards = Array.from(Object.values(args.cards));
 
-    await this.tableauStocks[winner_id].addCards(Array.from(cards));
-    await this.tableauStocks[winner_id].placeCards(cards);
+    await this.tableauStocks[winner_id].addCards(cards);
+    await this.cardsManager.placeCards(cards); // auto-placement
   }
 }
 

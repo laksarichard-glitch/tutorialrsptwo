@@ -270,4 +270,20 @@ class Game extends \Bga\GameFramework\Table
         $this->cards->moveCard($card['id'], 'hand', $playerId);
     }
     */
+
+    /**
+     * Another example of debug function, to easily test the zombie code.
+     */
+    public function debug_playHandAutomatically()
+    {
+        $this->bga->debug->playUntil(fn(int $count) => $count == 4);
+    }
+
+    /**
+     * Another example of debug function, to easily test the zombie code.
+     */
+    public function debug_playGameAutomatically()
+    {
+        $this->bga->debug->playUntil(fn(int $count) => $count == 52);
+    }
 }

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Bga\Games\tutorialrsptwo\States;
 
+use Bga\GameFramework\Actions\Debug as ActionsDebug;
+use Bga\GameFramework\Debug;
 use Bga\Games\tutorialrsptwo\Game;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\PossibleAction;
@@ -26,6 +28,7 @@ class PlayerTurn extends GameState
     #[PossibleAction]
     public function actPlayCard(int $cardId, int $activePlayerId)
     {
+
         $game = $this->game;
         $game->cards->moveCard($cardId, 'cardsontable', $activePlayerId);
         // TODO: check rules here
@@ -62,9 +65,25 @@ class PlayerTurn extends GameState
 
     public function zombie(int $playerId)
     {
-        // We must implement this so BGA can auto play in the case a player becomes a zombie, but for this tutorial we won't handle this case
-        throw new \BgaUserException('Not implemented: zombie for player ${player_id}', args: [
-            'player_id' => $playerId,
-        ]);
+        $game = $this->game;
+        // Auto-play a random card from player's hand
+        $cards_in_hand = $game->cards->getCardsInLocation('hand', $playerId);
+        if (count($cards_in_hand) > 0) {
+            $card_to_play = $cards_in_hand[array_rand($cards_in_hand)];
+            $game->cards->moveCard($card_to_play['id'], 'cardsontable', $playerId);
+            // Notify
+            $game->notify->all(
+                'playCard',
+                clienttranslate('${player_name} auto plays ${value_displayed} ${color_displayed}'),
+                [
+                    'i18n' => array('color_displayed', 'value_displayed'),
+                    'card' => $card_to_play,
+                    'player_id' => $playerId,
+                    'value_displayed' => $game->card_types['types'][$card_to_play['type_arg']]['name'],
+                    'color_displayed' => $game->card_types['suites'][$card_to_play['type']]['name']
+                ]
+            );
+        }
+        return NextPlayer::class;
     }
 }
