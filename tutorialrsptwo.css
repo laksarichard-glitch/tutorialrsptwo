@@ -54,19 +54,21 @@
 }
 
 .playertable_1 {
-  left: 0px;
-  top: 50%;
-  margin-top: calc(var(--h-tableau-height) / 2 * -1);
-}
-.playertable_2 {
   right: 0px;
   top: 50%;
   margin-top: calc(var(--h-tableau-height) / 2 * -1);
 }
-.playertable_3 {
+
+.playertable_2 {
   bottom: 0px;
   left: 50%;
   margin-left: calc(var(--h-tableau-width) / 2 * -1);
+}
+
+.playertable_3 {
+  left: 0px;
+  top: 50%;
+  margin-top: calc(var(--h-tableau-height) / 2 * -1);
 }
 
 .ha-card-front {

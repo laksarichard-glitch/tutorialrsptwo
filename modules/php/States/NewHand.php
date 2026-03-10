@@ -21,7 +21,6 @@ class NewHand extends GameState
     }
 
     // The action we do when entering the state
-    // The action we do when entering the state
     public function onEnteringState()
     {
         $game = $this->game;

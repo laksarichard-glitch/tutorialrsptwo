@@ -23,6 +23,7 @@ namespace Bga\Games\tutorialrsptwo;
 use Bga\Games\tutorialrsptwo\States\PlayerTurn;
 use Bga\GameFramework\Components\Counters\PlayerCounter;
 use Bga\GameFramework\Components\Deck;
+use Bga\Games\tutorialrsptwo\States\NewHand;
 
 class Game extends \Bga\GameFramework\Table
 {

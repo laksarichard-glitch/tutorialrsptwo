@@ -91,6 +91,7 @@ export class Game {
 
     gamedatas.playerorder.forEach((playerId, index) => {
       let player = this.getPlayer(gamedatas, playerId);
+      debugger;
 
       // we generate this html snippet for each player
       // need to tweak so that divs are displayed so as to make sense i.e. first player at top of screen,
@@ -100,7 +101,7 @@ export class Game {
         "beforeend",
         `
           <div class="playertable whiteblock playertable_${index}">
-            <div class="playertablename" style="color:#${player.color};">${player.name}~${player.id}</div>
+            <div class="playertablename" style="color:#${player.color};">${player.name}~${player.id}¬${index}</div>
             <div id="tableau_${player.id}"/></div>
             <div id="cardswon_${player.id}"/></div>
           </div>
