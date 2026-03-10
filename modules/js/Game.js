@@ -262,6 +262,7 @@ export class Game {
 
   // TODO: from this point and below, you can write your game notifications handling methods
   async notif_newHand(args) {
+    debugger;
     // We received a new full hand of 13 cards.
     this.handStock.removeAll();
     this.handStock.addCards(Array.from(Object.values(args.hand)));
@@ -272,12 +273,15 @@ export class Game {
     this.tableauStocks[args.player_id].addCards([args.card]);
   }
 
+  async notif_xxx(args) {
+    console.log("notif_xxxCard", args);
+  }
+
   async notif_trickWin(args) {
     // We do nothing here (just wait in order players can view the 4 cards played before they're gone)
   }
 
   async notif_giveAllCardsToPlayer(args) {
-    debugger;
     // Move all cards on table to given table, then destroy them
     const winner_id = args.player_id;
     const cards = Array.from(Object.values(args.cards));
