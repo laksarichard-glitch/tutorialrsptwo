@@ -42,6 +42,7 @@ class NewHand extends GameState
         foreach ($players as $player_id => $player) {
             $game->notify->all('xxx', "in player loop for player $player_id");
             $cards = $game->cards->pickCards(13, 'deck', $player_id);
+            $game->notify->all('xxx', 'cards ', array('cards' => $cards));
             // Notify player about his cards
             $this->bga->notify->player($player_id, 'newHand', '', array('cards' => $cards));
         }

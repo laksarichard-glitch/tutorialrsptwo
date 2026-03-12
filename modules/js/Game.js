@@ -91,7 +91,6 @@ export class Game {
 
     gamedatas.playerorder.forEach((playerId, index) => {
       let player = this.getPlayer(gamedatas, playerId);
-      debugger;
 
       // we generate this html snippet for each player
       // need to tweak so that divs are displayed so as to make sense i.e. first player at top of screen,
@@ -152,18 +151,9 @@ export class Game {
     // TODO: fix handStock
     console.log("fix hand stock");
 
-    this.handStock.addCards(
-      Object.values(this.gamedatas.hand).sort(function (a, b) {
-        // sort by suit then rank
-        if (a.type === b.type) {
-          // sub sort by rank
-          return parseInt(a.type_arg) - parseInt(b.type_arg);
-        } else {
-          // sort by suit
-          return parseInt(a.type) - parseInt(b.type);
-        }
-      }),
-    );
+    this.handStock.addCards(this.sortCards(Object.values(this.gamedatas.hand)));
+
+    debugger;
     gamedatas.playerorder.forEach((playerId) => {
       let player = this.getPlayer(gamedatas, playerId);
       // example of setting up players boards
@@ -212,8 +202,6 @@ export class Game {
 
         this.tableauStocks[player.id].addCards([card]);
       }
-
-      debugger;
     });
 
     // Setup game notifications to handle (see "setupNotifications" method below)
@@ -226,6 +214,20 @@ export class Game {
     return Object.values(gamedatas.players).filter(
       (player) => player.id == playerId,
     )[0];
+  }
+
+  sortCards(cards) {
+    return Array.from(cards).sort(function (a, b) {
+      // sort by suit then rank
+      // sort by suit then rank
+      if (a.type === b.type) {
+        // sub sort by rank
+        return parseInt(a.type_arg) - parseInt(b.type_arg);
+      } else {
+        // sort by suit
+        return parseInt(a.type) - parseInt(b.type);
+      }
+    });
   }
 
   ///////////////////////////////////////////////////
@@ -265,7 +267,8 @@ export class Game {
     debugger;
     // We received a new full hand of 13 cards.
     this.handStock.removeAll();
-    this.handStock.addCards(Array.from(Object.values(args.hand)));
+    this.handStock.addCards(this.sortCards(args.cards));
+    debugger;
   }
 
   async notif_playCard(args) {

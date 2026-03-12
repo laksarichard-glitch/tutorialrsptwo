@@ -287,4 +287,12 @@ class Game extends \Bga\GameFramework\Table
     {
         $this->bga->debug->playUntil(fn(int $count) => $count == 52);
     }
+
+    /**
+     * Another example of debug function, to easily test the zombie code.
+     */
+    public function debug_playMostOfGameAutomatically()
+    {
+        $this->bga->debug->playUntil(fn(int $count) => $count == 51);
+    }
 }
