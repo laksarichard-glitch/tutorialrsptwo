@@ -69,7 +69,10 @@ class PlayerTurn extends GameState
                 }
             }
             if ($has_suit && $card['type'] != $currenttrick_color) {
-                throw new SystemException(clienttranslate('You must follow suit'));
+                // what's better - exception or message
+                // throw new SystemException(clienttranslate('You must follow suit'));
+                $game->notify->all('xxx', 'Error : You must follow suit!');
+                return $this;
             }
         }
 
