@@ -73,7 +73,7 @@ export class Game {
         div.style.backgroundPositionY = `calc(100% / 3 * (${card.type} - 1))`; // 3 is number of rows in stock image minus 1
         this.bga.gameui.addTooltipHtml(
           div.id,
-          `tooltip of type : ${card.type} ~ id : ${card.id}`,
+          `tooltip of type : ${card.type}  ~ type_arg : ${card.type_arg} ~ id : ${card.id}`,
         );
       },
     });

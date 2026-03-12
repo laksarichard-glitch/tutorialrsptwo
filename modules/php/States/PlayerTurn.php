@@ -99,12 +99,11 @@ class PlayerTurn extends GameState
      *
      * This method returns some additional information that is very specific to the `PlayerTurn` game state.
      */
-    public function getArgs(): array
+    public function getArgs(int $activePlayerId): array
     {
-        // Get some values from the current game situation from the database.
-
+        $game = $this->game;
         return [
-            "playableCardsIds" => [1, 2],
+            "playableCardsIds" => $this->game->getPlayableCards($activePlayerId, $game),
         ];
     }
 
