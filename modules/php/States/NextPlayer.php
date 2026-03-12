@@ -64,6 +64,8 @@ class NextPlayer extends GameState
             } else {
                 // End of the trick
                 // Reset trick suite to 0 
+                $game->notify->all('xxx', 'NextPlayer - Reset trick suite to 0 ');
+
                 $this->game->setGameStateInitialValue('trick_color', 0);
                 return PlayerTurn::class;
             }

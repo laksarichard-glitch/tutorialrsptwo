@@ -121,24 +121,7 @@ class Game extends \Bga\GameFramework\Table
      * @param int $from_version
      * @return void
      */
-    public function upgradeTableDb($from_version)
-    {
-        //       if ($from_version <= 1404301345)
-        //       {
-        //            // ! important ! Use `DBPREFIX_<table_name>` for all tables
-        //
-        //            $sql = "ALTER TABLE `DBPREFIX_xxxxxxx` ....";
-        //            $this->applyDbUpgradeToAllDB( $sql );
-        //       }
-        //
-        //       if ($from_version <= 1405061421)
-        //       {
-        //            // ! important ! Use `DBPREFIX_<table_name>` for all tables
-        //
-        //            $sql = "CREATE TABLE `DBPREFIX_xxxxxxx` ....";
-        //            $this->applyDbUpgradeToAllDB( $sql );
-        //       }
-    }
+    public function upgradeTableDb($from_version) {}
 
     /*
      * Gather all information about current game situation (visible by the current player).

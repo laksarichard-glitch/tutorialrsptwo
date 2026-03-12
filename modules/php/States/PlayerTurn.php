@@ -10,6 +10,7 @@ use Bga\Games\tutorialrsptwo\Game;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\PossibleAction;
 use Bga\GameFramework\States\GameState;
+use Bga\GameFramework\SystemException;
 
 class PlayerTurn extends GameState
 {
@@ -28,22 +29,63 @@ class PlayerTurn extends GameState
     #[PossibleAction]
     public function actPlayCard(int $cardId, int $activePlayerId)
     {
-
         $game = $this->game;
+
+        $game->notify->all('xxx', "card check for card id $cardId");
+        $game->notify->all('xxx', "card check for active id $activePlayerId");
+
+        // rules check
+        $card = $game->cards->getCard($cardId);
+
+        $game->notify->all('xxx', 'location ' . $card['location']);
+
+        if (!$card) {
+            throw new SystemException("Invalid move");
+        }
+        // Rule checks
+
+        // Check that player has this card in hand - should not happen if client is well implemented, but better to check
+        if ($card['location'] != "hand") {
+            throw new SystemException(clienttranslate($card['location']));
+        }
+
+        $currenttrick_color = $game->getGameStateValue('trick_color');
+
+        $game->notify->all('xxx', 'current trick color ' . $currenttrick_color);
+
+        // Check that player follows suit if possible
+        if ($currenttrick_color == 0) {
+            // No suit to follow, any card can be played
+            // Set the trick color if it hasn't been set yet
+            $this->game->setGameStateValue('trick_color', $card['type']);
+            $game->notify->all('xxx', 'set  trick color to ' . $card['type']);
+        } else {
+            $has_suit = false;
+            $hand_cards = $game->cards->getCardsInLocation('hand', $activePlayerId);
+            foreach ($hand_cards as $hand_card) {
+                if ($hand_card['type'] == $currenttrick_color) {
+                    $has_suit = true;
+                    break;
+                }
+            }
+            if ($has_suit && $card['type'] != $currenttrick_color) {
+                throw new SystemException(clienttranslate('You must follow suit'));
+            }
+        }
+
         $game->cards->moveCard($cardId, 'cardsontable', $activePlayerId);
-        // TODO: check rules here
-        $currentCard = $game->cards->getCard($cardId);
+
         // And notify
         $game->notify->all(
             'playCard',
             clienttranslate('${player_name} plays ${value_displayed} ${color_displayed}'),
             [
                 'i18n' => array('color_displayed', 'value_displayed'),
-                'card' => $currentCard,
+                'card' => $card,
                 'player_id' => $activePlayerId,
                 'player_name' => $game->getPlayerNameById($activePlayerId),
-                'value_displayed' => $game->card_types['types'][$currentCard['type_arg']]['name'],
-                'color_displayed' => $game->card_types['suites'][$currentCard['type']]['name']
+                'value_displayed' => $game->card_types['types'][$card['type_arg']]['name'],
+                'color_displayed' => $game->card_types['suites'][$card['type']]['name']
             ]
         );
         return NextPlayer::class;
