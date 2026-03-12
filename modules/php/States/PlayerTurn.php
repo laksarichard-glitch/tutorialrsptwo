@@ -49,49 +49,41 @@ class PlayerTurn extends GameState
             throw new SystemException(clienttranslate($card['location']));
         }
 
-        $currenttrick_color = $game->getGameStateValue('trick_color');
+        // Rule checks
+        $playable_cards = $game->getPlayableCards($activePlayerId, $game);
+        if (!in_array($cardId, $playable_cards)) {
+            $value_displayed = $game->card_types['types'][$card['type_arg']]['name'];
+            $color_displayed = $game->card_types['suites'][$card['type']]['name'];
 
-        $game->notify->all('xxx', 'current trick color ' . $currenttrick_color);
-
-        // Check that player follows suit if possible
-        if ($currenttrick_color == 0) {
-            // No suit to follow, any card can be played
-            // Set the trick color if it hasn't been set yet
-            $this->game->setGameStateValue('trick_color', $card['type']);
-            $game->notify->all('xxx', 'set  trick color to ' . $card['type']);
+            $game->notify->all('xxx', "Error : You cannot play the $value_displayed $color_displayed card now!");
+            return $this;
         } else {
-            $has_suit = false;
-            $hand_cards = $game->cards->getCardsInLocation('hand', $activePlayerId);
-            foreach ($hand_cards as $hand_card) {
-                if ($hand_card['type'] == $currenttrick_color) {
-                    $has_suit = true;
-                    break;
-                }
+            $currenttrick_color = $game->getGameStateValue('trick_color');
+            $game->notify->all('xxx', 'current trick color ' . $currenttrick_color);
+            if ($currenttrick_color == 0) {
+                // No suit to follow, any card can be played
+                // Set the trick color if it hasn't been set yet
+                $this->game->setGameStateValue('trick_color', $card['type']);
+                $game->notify->all('xxx', 'set  trick color to ' . $card['type']);
             }
-            if ($has_suit && $card['type'] != $currenttrick_color) {
-                // what's better - exception or message
-                // throw new SystemException(clienttranslate('You must follow suit'));
-                $game->notify->all('xxx', 'Error : You must follow suit!');
-                return $this;
-            }
+
+            $game->cards->moveCard($cardId, 'cardsontable', $activePlayerId);
+
+            // And notify
+            $game->notify->all(
+                'playCard',
+                clienttranslate('${player_name} plays ${value_displayed} ${color_displayed}'),
+                [
+                    'i18n' => array('color_displayed', 'value_displayed'),
+                    'card' => $card,
+                    'player_id' => $activePlayerId,
+                    'player_name' => $game->getPlayerNameById($activePlayerId),
+                    'value_displayed' => $game->card_types['types'][$card['type_arg']]['name'],
+                    'color_displayed' => $game->card_types['suites'][$card['type']]['name']
+                ]
+            );
+            return NextPlayer::class;
         }
-
-        $game->cards->moveCard($cardId, 'cardsontable', $activePlayerId);
-
-        // And notify
-        $game->notify->all(
-            'playCard',
-            clienttranslate('${player_name} plays ${value_displayed} ${color_displayed}'),
-            [
-                'i18n' => array('color_displayed', 'value_displayed'),
-                'card' => $card,
-                'player_id' => $activePlayerId,
-                'player_name' => $game->getPlayerNameById($activePlayerId),
-                'value_displayed' => $game->card_types['types'][$card['type_arg']]['name'],
-                'color_displayed' => $game->card_types['suites'][$card['type']]['name']
-            ]
-        );
-        return NextPlayer::class;
     }
 
     /**
@@ -110,24 +102,8 @@ class PlayerTurn extends GameState
     public function zombie(int $playerId)
     {
         $game = $this->game;
-        // Auto-play a random card from player's hand
-        $cards_in_hand = $game->cards->getCardsInLocation('hand', $playerId);
-        if (count($cards_in_hand) > 0) {
-            $card_to_play = $cards_in_hand[array_rand($cards_in_hand)];
-            $game->cards->moveCard($card_to_play['id'], 'cardsontable', $playerId);
-            // Notify
-            $game->notify->all(
-                'playCard',
-                clienttranslate('${player_name} auto plays ${value_displayed} ${color_displayed}'),
-                [
-                    'i18n' => array('color_displayed', 'value_displayed'),
-                    'card' => $card_to_play,
-                    'player_id' => $playerId,
-                    'value_displayed' => $game->card_types['types'][$card_to_play['type_arg']]['name'],
-                    'color_displayed' => $game->card_types['suites'][$card_to_play['type']]['name']
-                ]
-            );
-        }
-        return NextPlayer::class;
+        $playable_cards = $this->game->getPlayableCards($playerId, $game);
+        $zombieChoice = $this->getRandomZombieChoice($playable_cards); // random choice over possible moves
+        return $this->actPlayCard((int)$zombieChoice, $playerId);
     }
 }
