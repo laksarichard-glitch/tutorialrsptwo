@@ -52,7 +52,16 @@ class NewHand extends GameState
         $game->notify->all('xxx', 'Newhand - reset trick color ');
 
         // FIXME: first player one with 2 of clubs
-        $first_player = (int) $this->game->getActivePlayerId();
+        $first_player = $this->game->getUniqueValueFromDb("
+            SELECT 
+                card_location_arg 
+            FROM
+                card 
+            WHERE 
+                card_location = 'hand' AND 
+                card_type = 3 AND 
+                card_type_arg = 2
+                ");
 
         $game->notify->all('xxx', " first player $first_player");
 

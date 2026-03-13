@@ -287,36 +287,51 @@ class Game extends \Bga\GameFramework\Table
         $currentTrickColor = $this->getGameStateValue('trick_color');
         $broken_heart = $this->brokenHeart();
         $total_played = $this->cards->countCardInLocation('cardswon') + $this->cards->countCardInLocation('cardsontable');
+
+
         $hand = $this->cards->getPlayerHand($player_id);
 
         $playable_card_ids = [];
         $all_ids = array_keys($hand);
-        // return  [1, 2, 3, 4];
 
         if ($this->cards->getCardsInLocation('cardsontable', $player_id)) return []; // Already played a card
 
         // Check whether the first card of the hand has been played or not
-        if (!$currentTrickColor) { // First card of the trick
-            if ($broken_heart) return $all_ids; // Broken Heart or no limitation, can play any card
-            else {
-                // Exclude Heart as Heart hasn't been broken yet
-                foreach ($hand as $card) if ($card['type'] != 2) $playable_card_ids[] = $card['id'];
-                if (!$playable_card_ids) return $all_ids; // All Heart cards!
-                else return $playable_card_ids;
-            }
-        } else {
-            // Must follow the lead suit if possible
-            $same_suit = false;
-            foreach ($hand as $card)
-                if ($card['type'] == $currentTrickColor) {
-                    $same_suit = true;
-                    break;
+        if ($total_played == 0) {
+            // No cards have been played yet, find and return the starter card only
+            // 2 of clubs
+            foreach ($hand as $card) {
+                if ($card['type'] == 3 && $card['type_arg'] == 2) {
+                    return [$card['id']];
                 }
-            if ($same_suit) return $this->getObjectListFromDB("SELECT card_id FROM card WHERE card_type = $currentTrickColor AND card_location = 'hand' AND card_location_arg = $player_id", true); // Has at least 1 card of the same suit
+            }
+            // should never happen if the deck is correct, but just in case, if the player doesn't have the 2 of clubs, he can't start, so no playable cards
+            return [];
+        } else {
+            // Check whether the first card of the hand has been played or not
+            if (!$currentTrickColor) { // First card of the trick
+                if ($broken_heart) return $all_ids; // Broken Heart or no limitation, can play any card
+                else {
+                    // Exclude Heart as Heart hasn't been broken yet
+                    foreach ($hand as $card) if ($card['type'] != 2) $playable_card_ids[] = $card['id'];
+                    if (!$playable_card_ids) return $all_ids; // All Heart cards!
+                    else return $playable_card_ids;
+                }
+            } else {
+                // Must follow the lead suit if possible
+                $same_suit = false;
+                foreach ($hand as $card)
+                    if ($card['type'] == $currentTrickColor) {
+                        $same_suit = true;
+                        break;
+                    }
+                if ($same_suit) return $this->getObjectListFromDB("SELECT card_id FROM card WHERE card_type = $currentTrickColor AND card_location = 'hand' AND card_location_arg = $player_id", true); // Has at least 1 card of the same suit
 
-            else return $all_ids;
+                else return $all_ids;
+            }
         }
     }
+
 
     function brokenHeart(): bool
     {
