@@ -125,7 +125,7 @@ export class Game {
       document.getElementById("myhand"),
     );
 
-    this.handStock.setSelectionMode("single");
+    // this.handStock.setSelectionMode("single");
     this.handStock.onCardClick = (card) => {
       {
         console.log("onCardClick : card ", card);
@@ -317,6 +317,11 @@ class PlayerTurn {
 
     if (isCurrentPlayerActive) {
       const playableCardsIds = args.playableCardsIds; // returned by the PlayerTurn::getArgs
+      const allCards = this.game.handStock.getCards();
+      const playableCards = allCards.filter(
+        (card) => playableCardsIds.includes(card.id), // never know if we get int or string, this method cares
+      );
+      this.game.handStock.setSelectionMode("single", playableCards);
 
       // Add test action buttons in the action status bar, simulating a card click:
       playableCardsIds.forEach((cardId) =>
@@ -326,11 +331,11 @@ class PlayerTurn {
         ),
       );
 
-      this.bga.statusBar.addActionButton(
-        _("Pass"),
-        () => this.bga.actions.performAction("actPass"),
-        { color: "secondary" },
-      );
+      // this.bga.statusBar.addActionButton(
+      //   _("Pass"),
+      //   () => this.bga.actions.performAction("actPass"),
+      //   { color: "secondary" },
+      // );
     }
   }
 
