@@ -308,8 +308,14 @@ export class Game {
     const winner_id = args.player_id;
     const cards = Array.from(Object.values(args.cards));
 
+    // await this.tableauStocks[winner_id].addCards(cards);
+    // await this.cardsManager.placeCards(cards);
+
     await this.tableauStocks[winner_id].addCards(cards);
-    await this.cardsManager.placeCards(cards); // auto-placement
+    await this.tableauStocks[winner_id].removeCards(cards, {
+      fadeOut: true,
+      slideTo: $(`otherhand_${winner_id}`),
+    });
   }
 }
 
