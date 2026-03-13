@@ -106,6 +106,14 @@ export class Game {
           </div>
     `,
       );
+
+      document.getElementById(
+        `player_panel_content_${player.color}`,
+      ).innerHTML = `
+        <div id="otherhand_${player.id}" class="otherhand">
+          <i class="fa fa-window-restore"></i>
+        </div>
+        `;
     });
 
     this.bga.gameArea.getElement().insertAdjacentHTML(
@@ -274,8 +282,17 @@ export class Game {
   }
 
   async notif_playCard(args) {
+    const playerId = args.player_id;
+    let settings = {};
+    if (playerId != this.player_id) {
+      settings = {
+        fromElement: $(`otherhand_${playerId}`),
+        toPlaceholder: "grow",
+      };
+    }
+
     // Play a card on the table
-    this.tableauStocks[args.player_id].addCards([args.card]);
+    await this.tableauStocks[playerId].addCard(args.card, settings);
   }
 
   async notif_xxx(args) {
