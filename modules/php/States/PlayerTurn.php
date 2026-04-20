@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Bga\Games\tutorialrsptwo\States;
 
-use Bga\GameFramework\Actions\Debug as ActionsDebug;
-use Bga\GameFramework\Debug;
 use Bga\Games\tutorialrsptwo\Game;
 use Bga\GameFramework\StateType;
 use Bga\GameFramework\States\PossibleAction;
@@ -20,11 +18,13 @@ class PlayerTurn extends GameState
             $game,
             id: 31,
             type: StateType::ACTIVE_PLAYER, // This state type means that one player is active and can do actions
-            description: clienttranslate('${actplayer} must play a card'), // We tell OTHER players what they are waiting for
+            description: clienttranslate('${actplayer} eg ${actplayer} must play a card'), // We tell OTHER players what they are waiting for
             descriptionMyTurn: clienttranslate('${you} must play a card'), // We tell the ACTIVE player what they must do
             // We suround the code with clienttranslate() so that the text is sent to the client for translation (this will enable the game to support other languages)
         );
     }
+
+
 
     #[PossibleAction]
     public function actPlayCard(int $cardId, int $activePlayerId)
